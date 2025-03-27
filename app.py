@@ -1,6 +1,7 @@
 import streamlit as st
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
+from langchain.text_splitter import CharacterTextSplitter
 
 # Initializes the page configuration
 st.set_page_config(page_title="Chat with PDF", page_icon=":books:")
@@ -13,6 +14,17 @@ def get_pdf_text(pdf_docs):
         for page in pdf_reader.pages:
             text += page.extract_text()
     return text
+
+# Function to split the text into chunks using CharacterTextSplitter from langchain
+def get_text_chunks(text):
+    text_splitter = CharacterTextSplitter(
+        separator="\n",
+        chunk_size=1000,
+        chunk_overlap=200,
+        length_function=len,
+    )
+    chunks = text_splitter.split_text(text)
+    return chunks
 
 def main():
     load_dotenv()  # Load environment variables from .env file
@@ -29,8 +41,10 @@ def main():
             with st.spinner("Processing..."):
                 # get the pdf texts
                 raw_text = get_pdf_text(pdf_docs)  # Function to extract text from the uploaded PDFs
-                st.write(raw_text) # Display the raw text
-            # get the text chunks
+
+                # get the text chunks
+                text_chunks = get_text_chunks(raw_text)  # Function to split the text into chunks
+                st.write(text_chunks)
 
             # create vector store
 
