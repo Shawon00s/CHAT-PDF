@@ -2,6 +2,8 @@ import streamlit as st
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
+from langchain.embeddings import OpenAIEmbeddings, HuggingFaceInstructEmbeddings
+from langchain.vectorstores import FAISS
 
 # Initializes the page configuration
 st.set_page_config(page_title="Chat with PDF", page_icon=":books:")
@@ -26,6 +28,15 @@ def get_text_chunks(text):
     chunks = text_splitter.split_text(text)
     return chunks
 
+# Create a vector store using FAISS and HuggingFaceInstructEmbeddings
+def get_vectorstore(text_chunks):
+    embeddings = HuggingFaceInstructEmbeddings(
+    model_name="hkunlp/instructor-large",
+    model_kwargs={}
+    )
+    vectorstore = FAISS.from_texts(text=text_chunks, embedding = embeddings)
+    return vectorstore
+
 def main():
     load_dotenv()  # Load environment variables from .env file
 
@@ -46,7 +57,8 @@ def main():
                 text_chunks = get_text_chunks(raw_text)  # Function to split the text into chunks
                 st.write(text_chunks)
 
-            # create vector store
+                # create vector store
+                vectorstore = get_vectorstore(text_chunks)  # Function to create a vector store using FAISS
 
 if __name__ == '__main__':
     main()
